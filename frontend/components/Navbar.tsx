@@ -44,7 +44,29 @@ export default function Navbar() {
             </Link>
           </div>
         </div>
-        <div>
+        <div className="flex items-center gap-3">
+          {/* Wallet connection status indicator */}
+          <div className="relative group flex items-center justify-center w-3 h-3">
+            {isConnecting && (
+              <span className="absolute inline-block w-3 h-3 rounded-full bg-yellow-400 animate-ping opacity-75" />
+            )}
+            <span
+              className={`inline-block w-2.5 h-2.5 rounded-full transition-colors ${
+                isConnecting
+                  ? 'bg-yellow-400'
+                  : isConnected
+                  ? 'bg-green-500'
+                  : 'bg-gray-400'
+              }`}
+            />
+            {isConnected && address && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded bg-gray-900 text-white text-xs font-mono whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                {address}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+              </div>
+            )}
+          </div>
+
           {isConnected ? (
             <div className="flex items-center gap-3">
               <span className="text-sm font-mono text-gray-500">{short}</span>
