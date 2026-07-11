@@ -1,7 +1,15 @@
 import { Router, Request, Response } from 'express';
-import { getPool, getPoolCount } from '../services/stellar';
+import { getPool, getPoolCount, buildCreatePoolTransaction } from '../services/stellar';
 
 const router = Router();
+
+function serializeBigInts(obj: any): any {
+  return JSON.parse(
+    JSON.stringify(obj, (_key, value) =>
+      typeof value === 'bigint' ? value.toString() : value
+    )
+  );
+}
 
 // GET /pools — fetch all pools
 router.get('/', async (req: Request, res: Response) => {
@@ -14,7 +22,7 @@ router.get('/', async (req: Request, res: Response) => {
       if (pool) pools.push(pool);
     }
 
-    res.json(pools);
+    res.json(serializeBigInts(pools));
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Failed to fetch pools' });
@@ -26,7 +34,7 @@ router.get('/:id', async (req: Request, res: Response) => {
   try {
     const pool = await getPool(Number(req.params.id));
     if (!pool) return res.status(404).json({ error: 'Pool not found' });
-    res.json(pool);
+    res.json(serializeBigInts(pool));
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Failed to fetch pool' });
@@ -43,7 +51,7 @@ router.get('/:id/applications', async (req: Request, res: Response) => {
   }
 });
 
-// POST /pools — create pool (returns tx for frontend to sign)
+// POST /pools — create pool (returns unsigned tx XDR for frontend to sign)
 router.post('/', async (req: Request, res: Response) => {
   try {
     const { name, description, amount, deadline, creator } = req.body;
@@ -52,15 +60,12 @@ router.post('/', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // In production this would build and return an unsigned tx
-    // Frontend signs it with Freighter and submits to Stellar
-    res.json({
-      message: 'Pool creation transaction ready',
-      data: { name, description, amount, deadline, creator },
-    });
+    const xdr = await buildCreatePoolTransaction({ name, description, amount, deadline, creator });
+
+    res.json({ xdr });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Failed to create pool' });
+    console.error('createPool error:', e);
+    res.status(500).json({ error: 'Failed to build create pool transaction' });
   }
 });
 

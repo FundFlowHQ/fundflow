@@ -2,7 +2,11 @@ import * as StellarSdk from '@stellar/stellar-sdk';
 
 const SOROBAN_RPC_URL = process.env.SOROBAN_RPC_URL || 'https://soroban-testnet.stellar.org';
 const HORIZON_URL = process.env.HORIZON_URL || 'https://horizon-testnet.stellar.org';
-export const CONTRACT_ID = process.env.CONTRACT_ID || '';
+
+export function getContractId() {
+  return process.env.CONTRACT_ID || '';
+}
+
 export const NETWORK_PASSPHRASE = StellarSdk.Networks.TESTNET;
 
 export const server = new StellarSdk.rpc.Server(SOROBAN_RPC_URL);
@@ -10,7 +14,7 @@ export const horizon = new StellarSdk.Horizon.Server(HORIZON_URL);
 
 export async function getPoolCount(): Promise<number> {
   try {
-    const contract = new StellarSdk.Contract(CONTRACT_ID);
+    const contract = new StellarSdk.Contract(getContractId());
     const account = await server.getAccount(process.env.ADMIN_ADDRESS || '');
     const tx = new StellarSdk.TransactionBuilder(account, {
       fee: StellarSdk.BASE_FEE,
@@ -33,7 +37,7 @@ export async function getPoolCount(): Promise<number> {
 
 export async function getPool(poolId: number) {
   try {
-    const contract = new StellarSdk.Contract(CONTRACT_ID);
+    const contract = new StellarSdk.Contract(getContractId());
     const account = await server.getAccount(process.env.ADMIN_ADDRESS || '');
     const tx = new StellarSdk.TransactionBuilder(account, {
       fee: StellarSdk.BASE_FEE,
@@ -55,6 +59,42 @@ export async function getPool(poolId: number) {
     console.error('getPool error:', e);
     return null;
   }
+}
+
+export async function buildCreatePoolTransaction(params: {
+  name: string;
+  description: string;
+  amount: number;
+  deadline: number;
+  creator: string;
+}) {
+  const cid = getContractId();
+  const contract = new StellarSdk.Contract(cid);
+  const account = await server.getAccount(params.creator);
+
+  const nativeTokenId = StellarSdk.Asset.native().contractId(NETWORK_PASSPHRASE);
+  console.log('nativeTokenId:', nativeTokenId);
+
+  const tx = new StellarSdk.TransactionBuilder(account, {
+    fee: StellarSdk.BASE_FEE,
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(
+      contract.call(
+        'create_pool',
+        StellarSdk.nativeToScVal(params.creator, { type: 'address' }),
+        StellarSdk.nativeToScVal(params.name, { type: 'string' }),
+        StellarSdk.nativeToScVal(params.description, { type: 'string' }),
+        StellarSdk.nativeToScVal(nativeTokenId, { type: 'address' }),
+        StellarSdk.nativeToScVal(params.amount, { type: 'i128' }),
+        StellarSdk.nativeToScVal(params.deadline, { type: 'u64' })
+      )
+    )
+    .setTimeout(30)
+    .build();
+
+  const prepared = await server.prepareTransaction(tx);
+  return prepared.toXDR();
 }
 
 export async function getLeaderboard(period: 'all' | 'month' = 'all') {
@@ -106,7 +146,7 @@ export async function getLeaderboard(period: 'all' | 'month' = 'all') {
 
 export async function getApplication(appId: number) {
   try {
-    const contract = new StellarSdk.Contract(CONTRACT_ID);
+    const contract = new StellarSdk.Contract(getContractId());
     const account = await server.getAccount(process.env.ADMIN_ADDRESS || '');
     const tx = new StellarSdk.TransactionBuilder(account, {
       fee: StellarSdk.BASE_FEE,

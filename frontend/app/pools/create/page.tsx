@@ -1,13 +1,18 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useWallet } from '@/lib/wallet';
+import * as StellarSdk from '@stellar/stellar-sdk';
+import { useWallet, signTransaction } from '@/lib/wallet';
 import { createPool } from '@/lib/api';
+
+const SOROBAN_RPC_URL = 'https://soroban-testnet.stellar.org';
+const NETWORK_PASSPHRASE = StellarSdk.Networks.TESTNET;
 
 export default function CreatePoolPage() {
   const router = useRouter();
   const { address, isConnected, connect } = useWallet();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -23,17 +28,70 @@ export default function CreatePoolPage() {
     e.preventDefault();
     if (!address) return;
     setLoading(true);
+    setError(null);
 
-    const result = await createPool({
-      name: form.name,
-      description: form.description,
-      amount: Number(form.amount) * 10_000_000,
-      deadline: Math.floor(new Date(form.deadline).getTime() / 1000),
-      creator: address,
-    });
+    try {
+      const result = await createPool({
+        name: form.name,
+        description: form.description,
+        amount: Number(form.amount) * 10_000_000,
+        deadline: Math.floor(new Date(form.deadline).getTime() / 1000),
+        creator: address,
+      });
 
-    setLoading(false);
-    if (result) router.push('/pools');
+      if (!result || !(result as any).xdr) {
+        setError('Failed to prepare transaction.');
+        setLoading(false);
+        return;
+      }
+
+      const xdr = (result as any).xdr as string;
+
+      const signResult = await signTransaction(xdr, {
+        networkPassphrase: NETWORK_PASSPHRASE,
+        address,
+      });
+
+      if (!signResult || (signResult as any).error) {
+        setError('Transaction signing was cancelled or failed.');
+        setLoading(false);
+        return;
+      }
+
+      const signedXdr = (signResult as any).signedTxXdr || (signResult as any).signedXDR;
+
+      const server = new StellarSdk.rpc.Server(SOROBAN_RPC_URL);
+      const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE);
+
+      const sendResult = await server.sendTransaction(signedTx);
+
+      if (sendResult.status === 'ERROR') {
+        setError('Transaction failed to submit.');
+        setLoading(false);
+        return;
+      }
+
+      // Poll for confirmation
+      let getResult = await server.getTransaction(sendResult.hash);
+      let attempts = 0;
+      while (getResult.status === 'NOT_FOUND' && attempts < 15) {
+        await new Promise((r) => setTimeout(r, 1000));
+        getResult = await server.getTransaction(sendResult.hash);
+        attempts++;
+      }
+
+      if (getResult.status !== 'SUCCESS') {
+        setError('Transaction did not complete successfully.');
+        setLoading(false);
+        return;
+      }
+
+      router.push('/pools');
+    } catch (err) {
+      console.error('Create pool error:', err);
+      setError(err instanceof Error ? err.message : 'Something went wrong.');
+      setLoading(false);
+    }
   }
 
   if (!isConnected) {
@@ -58,6 +116,12 @@ export default function CreatePoolPage() {
       <p className="text-sm text-gray-500 mb-8">
         Deposit XLM into a Soroban smart contract and accept contributor applications.
       </p>
+
+      {error && (
+        <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">
+          {error}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div>

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import {
   isConnected,
-  getAddress,
+  requestAccess,
   signTransaction,
 } from '@stellar/freighter-api';
 
@@ -31,8 +31,12 @@ export const useWallet = create<WalletStore>((set) => ({
         });
         return;
       }
-      const { address } = await getAddress();
-      set({ address, isConnected: true, isConnecting: false });
+      const result = await requestAccess();
+      if (result.error) {
+        set({ error: result.error, isConnecting: false });
+        return;
+      }
+      set({ address: result.address, isConnected: true, isConnecting: false });
     } catch (e: unknown) {
       set({ error: e instanceof Error ? e.message : 'Connection failed', isConnecting: false });
     }
