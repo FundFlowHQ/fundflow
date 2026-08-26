@@ -35,7 +35,7 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="flex items-end justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
             My dashboard
@@ -46,7 +46,7 @@ export default function DashboardPage() {
         </div>
         <Link
           href="/pools/create"
-          className="px-4 py-2 bg-blue-600 text-white text-sm rounded-xl hover:bg-blue-700 transition-colors"
+          className="px-4 py-2.5 min-h-[44px] bg-blue-600 text-white text-sm rounded-xl hover:bg-blue-700 transition-colors inline-flex items-center justify-center"
         >
           + New pool
         </Link>
