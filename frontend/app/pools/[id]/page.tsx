@@ -6,6 +6,8 @@ import { useParams } from 'next/navigation';
 import { getPool, getApplications } from '@/lib/api';
 import { useWallet } from '@/lib/wallet';
 import { CountdownTimer } from '@/components/CountdownTimer';
+import PoolAnalytics from '@/components/PoolAnalytics';
+import { GrantPool, Application } from '@/types';
 import { getIPFSUrl, fetchFromIPFS } from '@/lib/ipfs';
 import { GrantPool, Application } from '@/types';
 
@@ -95,6 +97,8 @@ export default function PoolDetailPage() {
     );
   }
 
+  const isCreator = address && pool.creator === address;
+
   return (
     <div>
       <Link href="/pools" className="text-sm text-blue-500 hover:underline">
@@ -136,11 +140,42 @@ export default function PoolDetailPage() {
         </div>
       </div>
 
+      {isCreator && applications.length > 0 && (
+        <PoolAnalytics pool={pool} applications={applications} />
+      )}
+
       {applications.length > 0 && (
         <div className="mt-6 p-4 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950">
           <h2 className="text-sm font-mono text-gray-400 uppercase tracking-widest mb-4">
             Applications ({applications.length})
           </h2>
+          <div className="flex flex-col gap-3">
+            {applications.map((app) => (
+              <div
+                key={app.id}
+                className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-900"
+              >
+                <div className="min-w-0">
+                  <p className="font-mono text-sm text-blue-600 truncate">
+                    {app.applicant.slice(0, 6)}...{app.applicant.slice(-6)}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-0.5 line-clamp-1">
+                    {app.proposal}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0 ml-3">
+                  <span className="font-mono text-sm text-gray-900 dark:text-gray-100">
+                    {(app.amount_requested / 10_000_000).toFixed(0)} XLM
+                  </span>
+                  <span className="font-mono text-xs text-gray-400">
+                    {app.votes} vote{app.votes !== 1 ? 's' : ''}
+                  </span>
+                  {app.is_approved && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-100 font-mono">
+                      Approved
+                    </span>
+                  )}
+                </div>
           <div className="flex flex-col gap-4">
             {applications.map((app) => (
               <div
