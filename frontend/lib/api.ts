@@ -52,6 +52,7 @@ export async function submitApplication(payload: {
   applicant: string;
   proposal: string;
   amount_requested: number;
+  ipfs_hash?: string;
 }): Promise<{ id: number } | null> {
   try {
     const { data } = await api.post('/applications', payload);
