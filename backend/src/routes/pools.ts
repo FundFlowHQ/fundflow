@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { getPool, getPoolCount, buildCreatePoolTransaction } from '../services/stellar';
+import { getPool, getPoolCount, buildCreatePoolTransaction, getPoolApplications } from '../services/stellar';
 
 const router = Router();
 
@@ -44,7 +44,8 @@ router.get('/:id', async (req: Request, res: Response) => {
 // GET /pools/:id/applications — fetch applications for a pool
 router.get('/:id/applications', async (req: Request, res: Response) => {
   try {
-    res.json([]);
+    const applications = await getPoolApplications(Number(req.params.id));
+    res.json(serializeBigInts(applications));
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Failed to fetch applications' });
