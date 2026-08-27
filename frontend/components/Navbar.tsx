@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useWallet } from '@/lib/wallet';
 import { getXLMBalance } from '@/lib/stellar';
+import { StellarLink } from '@/components/StellarLink';
 
 export default function Navbar() {
   const { address, isConnected, isConnecting, connect, disconnect } = useWallet();
@@ -61,7 +62,10 @@ export default function Navbar() {
             />
             {isConnected && address && (
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded bg-gray-900 text-white text-xs font-mono whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                {address}
+                <StellarLink
+                  address={address}
+                  className="text-white hover:text-blue-300"
+                />
                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
               </div>
             )}
@@ -69,7 +73,9 @@ export default function Navbar() {
 
           {isConnected ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm font-mono text-gray-500">{short}</span>
+              <StellarLink address={address} className="text-sm font-mono text-gray-500">
+                {short}
+              </StellarLink>
               {balanceLoading ? (
                 <span className="text-sm font-mono text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded animate-pulse">
                   ···

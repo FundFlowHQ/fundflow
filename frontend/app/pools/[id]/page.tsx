@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { getPool } from '@/lib/api';
 import { CountdownTimer } from '@/components/CountdownTimer';
+import { StellarLink } from '@/components/StellarLink';
+import { CONTRACT_ID } from '@/lib/stellar';
 import { GrantPool } from '@/types';
 
 export default function PoolDetailPage() {
@@ -56,6 +58,19 @@ export default function PoolDetailPage() {
           {pool.name}
         </h1>
         <p className="text-sm text-gray-500 mb-6">{pool.description}</p>
+
+        <div className="flex items-center gap-4 mb-4 text-sm font-mono text-gray-500">
+          <span>Creator:</span>
+          <StellarLink address={pool.creator} />
+          {CONTRACT_ID && (
+            <>
+              <span className="text-gray-300 dark:text-gray-700">·</span>
+              <StellarLink address={CONTRACT_ID} type="contract">
+                View contract
+              </StellarLink>
+            </>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900">
