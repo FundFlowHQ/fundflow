@@ -144,6 +144,40 @@ export async function getLeaderboard(period: 'all' | 'month' = 'all') {
   }
 }
 
+export async function getPoolApplications(poolId: number) {
+  try {
+    const contract = new StellarSdk.Contract(getContractId());
+    const account = await server.getAccount(process.env.ADMIN_ADDRESS || '');
+    const tx = new StellarSdk.TransactionBuilder(account, {
+      fee: StellarSdk.BASE_FEE,
+      networkPassphrase: NETWORK_PASSPHRASE,
+    })
+      .addOperation(
+        contract.call(
+          'get_pool_applications',
+          StellarSdk.nativeToScVal(poolId, { type: 'u64' })
+        )
+      )
+      .setTimeout(30)
+      .build();
+
+    const result = await server.simulateTransaction(tx);
+    if (StellarSdk.rpc.Api.isSimulationSuccess(result) && (result as any).result) {
+      const appIds: bigint[] = StellarSdk.scValToNative((result as any).result.retval);
+      const applications = [];
+      for (const id of appIds) {
+        const app = await getApplication(Number(id));
+        if (app) applications.push(app);
+      }
+      return applications;
+    }
+    return [];
+  } catch (e) {
+    console.error('getPoolApplications error:', e);
+    return [];
+  }
+}
+
 export async function getApplication(appId: number) {
   try {
     const contract = new StellarSdk.Contract(getContractId());
