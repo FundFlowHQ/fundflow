@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { getPool } from '@/lib/api';
 import { CountdownTimer } from '@/components/CountdownTimer';
+import { SkeletonDetail } from '@/components/Skeleton';
 import { GrantPool } from '@/types';
 
 export default function PoolDetailPage() {
@@ -23,9 +24,7 @@ export default function PoolDetailPage() {
   }, [poolId]);
 
   if (loading) {
-    return (
-      <div className="h-64 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
-    );
+    return <SkeletonDetail />;
   }
 
   if (!pool) {
