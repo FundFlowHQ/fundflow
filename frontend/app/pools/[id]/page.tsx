@@ -6,6 +6,9 @@ import { useParams } from 'next/navigation';
 import { getPool, getApplications } from '@/lib/api';
 import { useWallet } from '@/lib/wallet';
 import { CountdownTimer } from '@/components/CountdownTimer';
+import { StellarLink } from '@/components/StellarLink';
+import { CONTRACT_ID } from '@/lib/stellar';
+import { GrantPool } from '@/types';
 import PoolAnalytics from '@/components/PoolAnalytics';
 import { GrantPool, Application } from '@/types';
 import { getIPFSUrl, fetchFromIPFS } from '@/lib/ipfs';
@@ -120,6 +123,20 @@ export default function PoolDetailPage() {
         </h1>
         <p className="text-sm text-gray-500 mb-6">{pool.description}</p>
 
+        <div className="flex items-center gap-4 mb-4 text-sm font-mono text-gray-500">
+          <span>Creator:</span>
+          <StellarLink address={pool.creator} />
+          {CONTRACT_ID && (
+            <>
+              <span className="text-gray-300 dark:text-gray-700">·</span>
+              <StellarLink address={CONTRACT_ID} type="contract">
+                View contract
+              </StellarLink>
+            </>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900">
             <p className="text-xs font-mono text-gray-400 mb-1">Remaining amount</p>

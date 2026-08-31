@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useWallet } from '@/lib/wallet';
 import { getPools } from '@/lib/api';
 import { CountdownTimer } from '@/components/CountdownTimer';
+import { StellarLink } from '@/components/StellarLink';
 import { GrantPool } from '@/types';
 
 export default function DashboardPage() {
@@ -40,9 +41,11 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
             My dashboard
           </h1>
-          <p className="text-sm font-mono text-gray-400 mt-1">
-            {address?.slice(0, 6)}...{address?.slice(-6)}
-          </p>
+          {address && (
+            <p className="text-sm font-mono text-gray-400 mt-1">
+              <StellarLink address={address} className="text-gray-400 hover:text-blue-500" />
+            </p>
+          )}
         </div>
         <Link
           href="/pools/create"
