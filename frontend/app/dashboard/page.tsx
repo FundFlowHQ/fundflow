@@ -5,6 +5,7 @@ import { useWallet } from '@/lib/wallet';
 import { getPools } from '@/lib/api';
 import { CountdownTimer } from '@/components/CountdownTimer';
 import { SkeletonListRow } from '@/components/Skeleton';
+import { StellarLink } from '@/components/StellarLink';
 import { GrantPool } from '@/types';
 
 export default function DashboardPage() {
@@ -36,18 +37,20 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="flex items-end justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
             My dashboard
           </h1>
-          <p className="text-sm font-mono text-gray-400 mt-1">
-            {address?.slice(0, 6)}...{address?.slice(-6)}
-          </p>
+          {address && (
+            <p className="text-sm font-mono text-gray-400 mt-1">
+              <StellarLink address={address} className="text-gray-400 hover:text-blue-500" />
+            </p>
+          )}
         </div>
         <Link
           href="/pools/create"
-          className="px-4 py-2 bg-blue-600 text-white text-sm rounded-xl hover:bg-blue-700 transition-colors"
+          className="px-4 py-2.5 min-h-[44px] bg-blue-600 text-white text-sm rounded-xl hover:bg-blue-700 transition-colors inline-flex items-center justify-center"
         >
           + New pool
         </Link>
