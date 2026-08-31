@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { getPool, getApplications } from '@/lib/api';
 import { useWallet } from '@/lib/wallet';
 import { CountdownTimer } from '@/components/CountdownTimer';
+import { SkeletonDetail } from '@/components/Skeleton';
 import { StellarLink } from '@/components/StellarLink';
 import { CONTRACT_ID } from '@/lib/stellar';
 import { GrantPool } from '@/types';
@@ -87,9 +88,7 @@ export default function PoolDetailPage() {
   }, [poolId]);
 
   if (loading) {
-    return (
-      <div className="h-64 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
-    );
+    return <SkeletonDetail />;
   }
 
   if (!pool) {

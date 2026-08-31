@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useWallet } from '@/lib/wallet';
 import { getPools } from '@/lib/api';
 import { CountdownTimer } from '@/components/CountdownTimer';
+import { SkeletonListRow } from '@/components/Skeleton';
 import { StellarLink } from '@/components/StellarLink';
 import { GrantPool } from '@/types';
 
@@ -61,9 +62,11 @@ export default function DashboardPage() {
 
       {loading ? (
         <div className="space-y-3">
-          {Array(3).fill(0).map((_, i) => (
-            <div key={i} className="h-20 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
-          ))}
+          {Array(3)
+            .fill(0)
+            .map((_, i) => (
+              <SkeletonListRow key={i} />
+            ))}
         </div>
       ) : pools.length === 0 ? (
         <div className="text-center py-12 text-gray-400 font-mono text-sm border border-dashed border-gray-200 dark:border-gray-700 rounded-2xl">
