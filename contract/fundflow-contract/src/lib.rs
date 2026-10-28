@@ -196,6 +196,39 @@ impl FundFlowContract {
         env.events().publish((Symbol::new(&env, "distributed"),), app_id);
     }
 
+    // Allow the pool creator to reclaim remaining funds after the deadline has passed
+    pub fn withdraw_unclaimed(env: Env, caller: Address, pool_id: u64) {
+        caller.require_auth();
+
+        let mut pool: GrantPool = env
+            .storage()
+            .instance()
+            .get(&DataKey::Pool(pool_id))
+            .expect("Pool not found");
+
+        assert_eq!(caller, pool.creator, "Only pool creator can withdraw");
+        assert!(env.ledger().timestamp() >= pool.deadline, "Deadline not reached yet");
+        assert!(pool.is_active, "Pool already closed");
+        assert!(pool.remaining_amount > 0, "Nothing left to withdraw");
+
+        let amount = pool.remaining_amount;
+
+        // Transfer remaining tokens back to the creator
+        let token_client = token::Client::new(&env, &pool.token);
+        token_client.transfer(
+            &env.current_contract_address(),
+            &caller,
+            &amount,
+        );
+
+        pool.remaining_amount = 0;
+        pool.is_active = false;
+
+        env.storage().instance().set(&DataKey::Pool(pool_id), &pool);
+
+        env.events().publish((Symbol::new(&env, "withdrawn"),), pool_id);
+    }
+
     // Read functions
     pub fn get_pool(env: Env, pool_id: u64) -> GrantPool {
         env.storage()
