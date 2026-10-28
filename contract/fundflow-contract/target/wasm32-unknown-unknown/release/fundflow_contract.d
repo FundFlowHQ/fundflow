@@ -1,1 +1,0 @@
-C:\Users\HP\Downloads\fundflow\fundflow\contract\fundflow-contract\target\wasm32-unknown-unknown\release\fundflow_contract.wasm: C:\Users\HP\Downloads\fundflow\fundflow\contract\fundflow-contract\src\lib.rs

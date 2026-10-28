@@ -1,8 +1,0 @@
-C:\Users\HP\Downloads\fundflow\fundflow\contract\fundflow-contract\target\release\deps\crate_git_revision-6827f16a15446f0c.d: C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crate-git-revision-0.0.6\src\lib.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crate-git-revision-0.0.6\src\test.rs
-
-C:\Users\HP\Downloads\fundflow\fundflow\contract\fundflow-contract\target\release\deps\libcrate_git_revision-6827f16a15446f0c.rlib: C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crate-git-revision-0.0.6\src\lib.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crate-git-revision-0.0.6\src\test.rs
-
-C:\Users\HP\Downloads\fundflow\fundflow\contract\fundflow-contract\target\release\deps\libcrate_git_revision-6827f16a15446f0c.rmeta: C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crate-git-revision-0.0.6\src\lib.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crate-git-revision-0.0.6\src\test.rs
-
-C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crate-git-revision-0.0.6\src\lib.rs:
-C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crate-git-revision-0.0.6\src\test.rs:
