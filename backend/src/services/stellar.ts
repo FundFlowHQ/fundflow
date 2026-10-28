@@ -97,6 +97,32 @@ export async function buildCreatePoolTransaction(params: {
   return prepared.toXDR();
 }
 
+export async function buildWithdrawTransaction(params: {
+  poolId: number;
+  caller: string;
+}) {
+  const cid = getContractId();
+  const contract = new StellarSdk.Contract(cid);
+  const account = await server.getAccount(params.caller);
+
+  const tx = new StellarSdk.TransactionBuilder(account, {
+    fee: StellarSdk.BASE_FEE,
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(
+      contract.call(
+        'withdraw_unclaimed',
+        StellarSdk.nativeToScVal(params.caller, { type: 'address' }),
+        StellarSdk.nativeToScVal(params.poolId, { type: 'u64' })
+      )
+    )
+    .setTimeout(30)
+    .build();
+
+  const prepared = await server.prepareTransaction(tx);
+  return prepared.toXDR();
+}
+
 export async function getLeaderboard(period: 'all' | 'month' = 'all') {
   try {
     const base = `${HORIZON_URL}/payments?limit=100&order=desc`;

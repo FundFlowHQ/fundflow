@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { getPool, getPoolCount, buildCreatePoolTransaction } from '../services/stellar';
+import { getPool, getPoolCount, buildCreatePoolTransaction, buildWithdrawTransaction } from '../services/stellar';
 
 const router = Router();
 
@@ -66,6 +66,25 @@ router.post('/', async (req: Request, res: Response) => {
   } catch (e) {
     console.error('createPool error:', e);
     res.status(500).json({ error: 'Failed to build create pool transaction' });
+  }
+});
+
+// POST /pools/:id/withdraw — withdraw unclaimed funds after deadline (returns unsigned tx XDR for frontend to sign)
+router.post('/:id/withdraw', async (req: Request, res: Response) => {
+  try {
+    const { caller } = req.body;
+    const poolId = Number(req.params.id);
+
+    if (!caller) {
+      return res.status(400).json({ error: 'Missing required field: caller' });
+    }
+
+    const xdr = await buildWithdrawTransaction({ poolId, caller });
+
+    res.json({ xdr });
+  } catch (e) {
+    console.error('withdrawPool error:', e);
+    res.status(500).json({ error: 'Failed to build withdraw transaction' });
   }
 });
 
