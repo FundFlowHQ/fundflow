@@ -47,6 +47,18 @@ export async function createPool(payload: {
   }
 }
 
+export async function withdrawPool(
+  poolId: number,
+  caller: string
+): Promise<{ xdr: string } | null> {
+  try {
+    const { data } = await api.post(`/pools/${poolId}/withdraw`, { caller });
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export async function submitApplication(payload: {
   pool_id: number;
   applicant: string;

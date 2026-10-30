@@ -3,15 +3,24 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { getPool } from '@/lib/api';
+import * as StellarSdk from '@stellar/stellar-sdk';
+import { getPool, withdrawPool } from '@/lib/api';
+import { useWallet, signTransaction } from '@/lib/wallet';
 import { CountdownTimer } from '@/components/CountdownTimer';
 import { GrantPool } from '@/types';
+
+const SOROBAN_RPC_URL = 'https://soroban-testnet.stellar.org';
+const NETWORK_PASSPHRASE = StellarSdk.Networks.TESTNET;
 
 export default function PoolDetailPage() {
   const params = useParams();
   const poolId = Number(params.id);
+  const { address, isConnected, connect } = useWallet();
   const [pool, setPool] = useState<GrantPool | null>(null);
   const [loading, setLoading] = useState(true);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawError, setWithdrawError] = useState<string | null>(null);
+  const [withdrawSuccess, setWithdrawSuccess] = useState(false);
 
   useEffect(() => {
     if (!Number.isFinite(poolId)) return;
@@ -21,6 +30,71 @@ export default function PoolDetailPage() {
       setLoading(false);
     });
   }, [poolId]);
+
+  async function handleWithdraw() {
+    if (!address || !pool) return;
+    setWithdrawing(true);
+    setWithdrawError(null);
+
+    try {
+      const result = await withdrawPool(poolId, address);
+
+      if (!result || !(result as any).xdr) {
+        setWithdrawError('Failed to prepare withdraw transaction.');
+        setWithdrawing(false);
+        return;
+      }
+
+      const xdr = (result as any).xdr as string;
+
+      const signResult = await signTransaction(xdr, {
+        networkPassphrase: NETWORK_PASSPHRASE,
+        address,
+      });
+
+      if (!signResult || (signResult as any).error) {
+        setWithdrawError('Transaction signing was cancelled or failed.');
+        setWithdrawing(false);
+        return;
+      }
+
+      const signedXdr = (signResult as any).signedTxXdr || (signResult as any).signedXDR;
+
+      const server = new StellarSdk.rpc.Server(SOROBAN_RPC_URL);
+      const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE);
+
+      const sendResult = await server.sendTransaction(signedTx);
+
+      if (sendResult.status === 'ERROR') {
+        setWithdrawError('Transaction failed to submit.');
+        setWithdrawing(false);
+        return;
+      }
+
+      let getResult = await server.getTransaction(sendResult.hash);
+      let attempts = 0;
+      while (getResult.status === 'NOT_FOUND' && attempts < 15) {
+        await new Promise((r) => setTimeout(r, 1000));
+        getResult = await server.getTransaction(sendResult.hash);
+        attempts++;
+      }
+
+      if (getResult.status !== 'SUCCESS') {
+        setWithdrawError('Transaction did not complete successfully.');
+        setWithdrawing(false);
+        return;
+      }
+
+      setWithdrawSuccess(true);
+      const refreshed = await getPool(poolId);
+      setPool(refreshed);
+      setWithdrawing(false);
+    } catch (err) {
+      console.error('Withdraw error:', err);
+      setWithdrawError(err instanceof Error ? err.message : 'Something went wrong.');
+      setWithdrawing(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -35,6 +109,14 @@ export default function PoolDetailPage() {
       </div>
     );
   }
+
+  const deadlinePassed = Date.now() / 1000 >= pool.deadline;
+  const canWithdraw =
+    pool.is_active &&
+    deadlinePassed &&
+    Number(pool.remaining_amount) > 0 &&
+    isConnected &&
+    address === pool.creator;
 
   return (
     <div>
@@ -61,7 +143,7 @@ export default function PoolDetailPage() {
           <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900">
             <p className="text-xs font-mono text-gray-400 mb-1">Remaining amount</p>
             <p className="font-semibold text-gray-900 dark:text-gray-50">
-              {(pool.remaining_amount / 10_000_000).toFixed(0)} XLM
+              {(Number(pool.remaining_amount) / 10_000_000).toFixed(0)} XLM
             </p>
           </div>
           <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900">
@@ -75,6 +157,43 @@ export default function PoolDetailPage() {
             <CountdownTimer deadline={pool.deadline} />
           </div>
         </div>
+
+        {deadlinePassed && Number(pool.remaining_amount) > 0 && pool.is_active && (
+          <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+            {withdrawError && (
+              <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">
+                {withdrawError}
+              </div>
+            )}
+
+            {withdrawSuccess && (
+              <div className="mb-4 px-4 py-3 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-sm">
+                Funds withdrawn successfully.
+              </div>
+            )}
+
+            {!isConnected ? (
+              <button
+                onClick={connect}
+                className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+              >
+                Connect Freighter to withdraw
+              </button>
+            ) : address === pool.creator ? (
+              <button
+                onClick={handleWithdraw}
+                disabled={withdrawing || withdrawSuccess}
+                className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              >
+                {withdrawing ? 'Withdrawing...' : 'Withdraw unclaimed funds'}
+              </button>
+            ) : (
+              <p className="text-sm text-gray-400 text-center">
+                Only the pool creator can withdraw unclaimed funds after the deadline.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
