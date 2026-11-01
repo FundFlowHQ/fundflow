@@ -18,7 +18,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 // POST /applications — submit application
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { pool_id, applicant, proposal, amount_requested } = req.body;
+    const { pool_id, applicant, proposal, amount_requested, ipfs_hash } = req.body;
 
     if (!pool_id || !applicant || !proposal || !amount_requested) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -26,7 +26,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     res.json({
       message: 'Application submission transaction ready',
-      data: { pool_id, applicant, proposal, amount_requested },
+      data: { pool_id, applicant, proposal, amount_requested, ipfs_hash: ipfs_hash || null },
     });
   } catch (e) {
     console.error(e);

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getPools } from '@/lib/api';
 import { CountdownTimer } from '@/components/CountdownTimer';
+import { SkeletonCard } from '@/components/Skeleton';
 import { GrantPool } from '@/types';
 
 export default function PoolsPage() {
@@ -18,7 +19,7 @@ export default function PoolsPage() {
 
   return (
     <div>
-      <div className="flex items-end justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
             Grant pools
@@ -29,7 +30,7 @@ export default function PoolsPage() {
         </div>
         <Link
           href="/pools/create"
-          className="px-4 py-2 bg-blue-600 text-white text-sm rounded-xl hover:bg-blue-700 transition-colors"
+          className="px-4 py-2.5 min-h-[44px] bg-blue-600 text-white text-sm rounded-xl hover:bg-blue-700 transition-colors inline-flex items-center justify-center"
         >
           + Create pool
         </Link>
@@ -37,9 +38,11 @@ export default function PoolsPage() {
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array(6).fill(0).map((_, i) => (
-            <div key={i} className="h-48 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
-          ))}
+          {Array(6)
+            .fill(0)
+            .map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
         </div>
       ) : pools.length === 0 ? (
         <div className="text-center py-20 text-gray-400 font-mono text-sm">

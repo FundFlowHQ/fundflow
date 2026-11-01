@@ -18,6 +18,7 @@ export interface Application {
   votes: number;
   is_approved: boolean;
   amount_requested: number;
+  ipfs_hash?: string;
 }
 
 export interface LeaderboardEntry {

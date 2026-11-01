@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useWallet } from '@/lib/wallet';
 import { getPools } from '@/lib/api';
 import { CountdownTimer } from '@/components/CountdownTimer';
+import { SkeletonListRow } from '@/components/Skeleton';
+import { StellarLink } from '@/components/StellarLink';
 import { GrantPool } from '@/types';
 
 export default function DashboardPage() {
@@ -35,18 +37,20 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="flex items-end justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
             My dashboard
           </h1>
-          <p className="text-sm font-mono text-gray-400 mt-1">
-            {address?.slice(0, 6)}...{address?.slice(-6)}
-          </p>
+          {address && (
+            <p className="text-sm font-mono text-gray-400 mt-1">
+              <StellarLink address={address} className="text-gray-400 hover:text-blue-500" />
+            </p>
+          )}
         </div>
         <Link
           href="/pools/create"
-          className="px-4 py-2 bg-blue-600 text-white text-sm rounded-xl hover:bg-blue-700 transition-colors"
+          className="px-4 py-2.5 min-h-[44px] bg-blue-600 text-white text-sm rounded-xl hover:bg-blue-700 transition-colors inline-flex items-center justify-center"
         >
           + New pool
         </Link>
@@ -58,9 +62,11 @@ export default function DashboardPage() {
 
       {loading ? (
         <div className="space-y-3">
-          {Array(3).fill(0).map((_, i) => (
-            <div key={i} className="h-20 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
-          ))}
+          {Array(3)
+            .fill(0)
+            .map((_, i) => (
+              <SkeletonListRow key={i} />
+            ))}
         </div>
       ) : pools.length === 0 ? (
         <div className="text-center py-12 text-gray-400 font-mono text-sm border border-dashed border-gray-200 dark:border-gray-700 rounded-2xl">

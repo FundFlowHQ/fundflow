@@ -7,24 +7,24 @@ export default function Home() {
         <div className="text-sm font-mono text-gray-400 uppercase tracking-widest mb-6">
           Stellar · Soroban · Web3
         </div>
-        <h1 className="text-5xl font-semibold tracking-tight text-gray-900 dark:text-gray-50 mb-6">
+        <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-gray-900 dark:text-gray-50 mb-6">
           Decentralized grant<br />
           <span className="text-blue-500">management on Stellar</span>
         </h1>
-        <p className="text-lg text-gray-500 max-w-xl mx-auto mb-10 leading-relaxed">
+        <p className="text-base sm:text-lg text-gray-500 max-w-xl mx-auto mb-10 leading-relaxed px-2">
           Create grant pools, accept contributor applications, vote on proposals,
           and distribute funds automatically via Soroban smart contracts.
         </p>
         <div className="flex gap-4 justify-center flex-wrap">
           <Link
             href="/pools"
-            className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+            className="px-6 py-3 min-h-[44px] bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
           >
             Explore pools
           </Link>
           <Link
             href="/pools/create"
-            className="px-6 py-3 border border-gray-200 dark:border-gray-700 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+            className="px-6 py-3 min-h-[44px] border border-gray-200 dark:border-gray-700 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
           >
             Create a pool →
           </Link>
@@ -63,7 +63,7 @@ export default function Home() {
       </section>
 
       <section className="mt-16 p-8 rounded-2xl bg-blue-50 dark:bg-blue-950 border border-blue-100 dark:border-blue-900">
-        <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-50 mb-1">
               Built on Stellar
