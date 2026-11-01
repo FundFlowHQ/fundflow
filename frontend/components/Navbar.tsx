@@ -83,25 +83,15 @@ export default function Navbar() {
             )}
           </div>
 
-          {isConnected ? (
-            <div className="flex items-center gap-3">
-              <StellarLink address={address} className="text-sm font-mono text-gray-500">
-                {short}
-              </StellarLink>
-              {balanceLoading ? (
-                <span className="text-sm font-mono text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded animate-pulse">
-                  ···
-                </span>
-              ) : (
-                <span className="text-sm font-mono text-blue-600">
-                  {balance ? `${balance} XLM` : '0 XLM'}
-                </span>
-              )}
           {/* Desktop wallet controls */}
           <div className="hidden md:flex items-center gap-3">
             {isConnected ? (
               <>
-                <span className="text-sm font-mono text-gray-500">{short}</span>
+                {address && (
+                  <StellarLink address={address} className="text-sm font-mono text-gray-500">
+                    {short}
+                  </StellarLink>
+                )}
                 {balanceLoading ? (
                   <span className="text-sm font-mono text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded animate-pulse">
                     ···
