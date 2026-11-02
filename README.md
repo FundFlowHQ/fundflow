@@ -27,30 +27,37 @@ Community members vote on applications through the smart contract. Votes are rec
 **Automatic fund distribution**
 Pool creators distribute funds to approved applicants via the Soroban contract. Tokens are transferred directly to the contributor's Stellar wallet with no intermediary.
 
+**Reclaim unclaimed funds**
+After a pool's deadline passes, the pool creator can withdraw any remaining balance back to their wallet through the contract.
+
 **Freighter wallet integration**
 Connect your Stellar wallet via the Freighter browser extension. All transactions are signed locally and submitted to the Stellar network.
 
 ## Architecture
+
+```
 fundflow/
-├── contract/              # Rust/Soroban smart contract
+├── contract/                   # Rust/Soroban smart contract
 │   └── fundflow-contract/
 │       ├── src/
-│       │   └── lib.rs     # Contract logic
+│       │   └── lib.rs          # Contract logic
 │       └── Cargo.toml
-├── backend/                # Node.js/TypeScript REST API
+├── backend/                    # Node.js/TypeScript REST API
 │   └── src/
-│       ├── index.ts        # Express server entry point
+│       ├── index.ts            # Express server entry point
 │       ├── routes/
 │       │   ├── pools.ts        # Pool endpoints
 │       │   └── applications.ts # Application endpoints
 │       └── services/
-│           └── stellar.ts  # Stellar SDK integration
-└── frontend/                # Next.js frontend
-└── app/
-├── page.tsx     # Homepage
-├── pools/       # Pool explorer + creation
-├── apply/       # Grant application form
-└── dashboard/   # Creator dashboard
+│           └── stellar.ts      # Stellar SDK integration
+└── frontend/                   # Next.js frontend
+    └── app/
+        ├── page.tsx            # Homepage
+        ├── pools/              # Pool explorer + creation
+        ├── apply/              # Grant application form
+        ├── leaderboard/        # Top funded contributors
+        └── dashboard/          # Creator dashboard
+```
 
 ## Tech stack
 
@@ -59,7 +66,7 @@ fundflow/
 | Smart contract | Rust + Soroban SDK |
 | Blockchain | Stellar Network (Testnet/Mainnet) |
 | Backend | Node.js + TypeScript + Express |
-| Frontend | Next.js 14 + React + TypeScript |
+| Frontend | Next.js 16 + React + TypeScript |
 | Styling | TailwindCSS |
 | Wallet | Freighter (Stellar wallet extension) |
 | Stellar SDK | `@stellar/stellar-sdk` v16+ |
@@ -76,7 +83,7 @@ fundflow/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/Ugasutun/fundflow.git
+git clone https://github.com/FundFlowHQ/fundflow.git
 cd fundflow
 ```
 
@@ -137,6 +144,7 @@ Open http://localhost:3000 in your browser.
 | `apply` | Submit a grant application to a pool |
 | `vote` | Vote on a grant application |
 | `distribute` | Distribute funds to an approved applicant |
+| `withdraw_unclaimed` | Let the pool creator reclaim remaining funds after the deadline |
 | `get_pool` | Fetch a pool by ID |
 | `get_application` | Fetch an application by ID |
 | `get_pool_applications` | Fetch all applications for a pool |
@@ -149,6 +157,7 @@ Open http://localhost:3000 in your browser.
 | GET | `/pools` | Fetch all grant pools |
 | GET | `/pools/:id` | Fetch a single pool |
 | POST | `/pools` | Create a new pool (returns unsigned transaction XDR for the frontend to sign) |
+| POST | `/pools/:id/withdraw` | Build an unsigned withdraw transaction (the pool creator signs it in the frontend) |
 | GET | `/pools/:id/applications` | Fetch applications for a pool |
 | GET | `/applications/:id` | Fetch a single application |
 | POST | `/applications` | Submit an application |
@@ -166,12 +175,15 @@ Looking for something to work on? Check our open issues — issues labeled `good
 
 - [x] Deploy contract to Stellar Testnet
 - [x] Deploy frontend to Vercel
+- [x] Mobile responsive improvements
+- [x] Add leaderboard for top funded contributors
+- [x] Stellar Explorer links for on-chain data
+- [x] Loading skeletons for faster perceived load times
+- [x] Withdraw unclaimed funds after the pool deadline
 - [ ] Add token support beyond XLM (USDC, custom tokens)
 - [ ] Add proposal IPFS storage for long-form content
 - [ ] Add multi-sig voting support
 - [ ] Add grant milestone tracking
-- [ ] Mobile responsive improvements
-- [ ] Add leaderboard for top funded contributors
 
 ## License
 
