@@ -165,6 +165,31 @@ Open http://localhost:3000 in your browser.
 | POST | `/applications/:id/distribute` | Distribute funds |
 | GET | `/health` | API health check |
 
+## Deployed contract (testnet)
+
+| Network | Contract ID |
+|---|---|
+| Stellar Testnet | `CDH7GQKT6KGZPO7VYHJVTYSEFYM7TCO56ZNS27CSFXQFPS2QSTWJLS2I` |
+
+[View the contract in Stellar Lab](https://lab.stellar.org/r/testnet/contract/CDH7GQKT6KGZPO7VYHJVTYSEFYM7TCO56ZNS27CSFXQFPS2QSTWJLS2I)
+
+## Deployment
+
+**Frontend (Vercel).** The `frontend` folder deploys to Vercel and redeploys automatically on every push to `main`. It needs two environment variables: `NEXT_PUBLIC_CONTRACT_ID` and `NEXT_PUBLIC_API_URL` (the address of the hosted backend, without a trailing slash). `NEXT_PUBLIC_` values are baked in at build time, so redeploy after changing them.
+
+**Backend (Render).** The `backend` folder runs as a Render web service.
+
+| Setting | Value |
+|---|---|
+| Root directory | `backend` |
+| Build command | `npm install --include=dev && npm run build` |
+| Start command | `npm start` |
+| Environment | `CONTRACT_ID`, `ADMIN_ADDRESS` (Render sets `PORT` itself) |
+
+On Render's free tier the service sleeps when idle, so the first request after a quiet period can take 30 to 60 seconds.
+
+**Redeploying the contract.** After running `stellar contract deploy`, copy the new contract ID into the backend's `CONTRACT_ID` and the frontend's `NEXT_PUBLIC_CONTRACT_ID`, then redeploy both.
+
 ## Contributing
 
 We welcome contributions of all kinds! Please read `CONTRIBUTING.md` before submitting a pull request.
