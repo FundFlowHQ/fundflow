@@ -188,6 +188,8 @@ Open http://localhost:3000 in your browser.
 
 On Render's free tier the service sleeps when idle, so the first request after a quiet period can take 30 to 60 seconds.
 
+The hosted API is available at https://fundflow-pz71.onrender.com (try `/health` and `/pools`).
+
 **Redeploying the contract.** After running `stellar contract deploy`, copy the new contract ID into the backend's `CONTRACT_ID` and the frontend's `NEXT_PUBLIC_CONTRACT_ID`, then redeploy both.
 
 ## Contributing
