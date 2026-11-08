@@ -727,3 +727,6 @@ mod tests {
         assert_eq!(apps.get(0), Some(app_id));
     }
 }
+
+#[cfg(test)]
+mod withdraw_tests;
