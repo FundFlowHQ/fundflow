@@ -9,6 +9,25 @@ export function getContractId() {
 
 export const NETWORK_PASSPHRASE = StellarSdk.Networks.TESTNET;
 
+// Tokens a pool can be funded with (Stellar testnet).
+export const SUPPORTED_TOKENS = ['XLM', 'USDC'] as const;
+export type SupportedToken = (typeof SUPPORTED_TOKENS)[number];
+
+// Circle's testnet USDC issuer. A mainnet deployment would use a different issuer.
+const USDC_TESTNET_ISSUER = 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';
+
+export function isSupportedToken(value: unknown): value is SupportedToken {
+  return typeof value === 'string' && (SUPPORTED_TOKENS as readonly string[]).includes(value);
+}
+
+export function getTokenContractId(token: SupportedToken): string {
+  const asset =
+    token === 'USDC'
+      ? new StellarSdk.Asset('USDC', USDC_TESTNET_ISSUER)
+      : StellarSdk.Asset.native();
+  return asset.contractId(NETWORK_PASSPHRASE);
+}
+
 export const server = new StellarSdk.rpc.Server(SOROBAN_RPC_URL);
 export const horizon = new StellarSdk.Horizon.Server(HORIZON_URL);
 
@@ -67,13 +86,13 @@ export async function buildCreatePoolTransaction(params: {
   amount: number;
   deadline: number;
   creator: string;
+  token?: SupportedToken;
 }) {
   const cid = getContractId();
   const contract = new StellarSdk.Contract(cid);
   const account = await server.getAccount(params.creator);
 
-  const nativeTokenId = StellarSdk.Asset.native().contractId(NETWORK_PASSPHRASE);
-  console.log('nativeTokenId:', nativeTokenId);
+  const tokenId = getTokenContractId(params.token ?? 'XLM');
 
   const tx = new StellarSdk.TransactionBuilder(account, {
     fee: StellarSdk.BASE_FEE,
@@ -85,7 +104,7 @@ export async function buildCreatePoolTransaction(params: {
         StellarSdk.nativeToScVal(params.creator, { type: 'address' }),
         StellarSdk.nativeToScVal(params.name, { type: 'string' }),
         StellarSdk.nativeToScVal(params.description, { type: 'string' }),
-        StellarSdk.nativeToScVal(nativeTokenId, { type: 'address' }),
+        StellarSdk.nativeToScVal(tokenId, { type: 'address' }),
         StellarSdk.nativeToScVal(params.amount, { type: 'i128' }),
         StellarSdk.nativeToScVal(params.deadline, { type: 'u64' })
       )

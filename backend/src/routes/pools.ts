@@ -1,5 +1,13 @@
 import { Router, Request, Response } from 'express';
-import { getPool, getPoolCount, buildCreatePoolTransaction, buildWithdrawTransaction, getPoolApplications } from '../services/stellar';
+import {
+  getPool,
+  getPoolCount,
+  buildCreatePoolTransaction,
+  buildWithdrawTransaction,
+  getPoolApplications,
+  isSupportedToken,
+  SUPPORTED_TOKENS,
+} from '../services/stellar';
 
 const router = Router();
 
@@ -53,15 +61,30 @@ router.get('/:id/applications', async (req: Request, res: Response) => {
 });
 
 // POST /pools — create pool (returns unsigned tx XDR for frontend to sign)
+// Optional body field "token": "XLM" (default) or "USDC"
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { name, description, amount, deadline, creator } = req.body;
+    const { name, description, amount, deadline, creator, token } = req.body;
 
     if (!name || !description || !amount || !deadline || !creator) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const xdr = await buildCreatePoolTransaction({ name, description, amount, deadline, creator });
+    const selectedToken = token ?? 'XLM';
+    if (!isSupportedToken(selectedToken)) {
+      return res.status(400).json({
+        error: `Unsupported token. Supported tokens: ${SUPPORTED_TOKENS.join(', ')}`,
+      });
+    }
+
+    const xdr = await buildCreatePoolTransaction({
+      name,
+      description,
+      amount,
+      deadline,
+      creator,
+      token: selectedToken,
+    });
 
     res.json({ xdr });
   } catch (e) {
